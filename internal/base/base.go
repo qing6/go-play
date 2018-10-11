@@ -57,24 +57,34 @@ var BufPool = sync.Pool{
 	},
 }
 
-func GetLogger() *logrus.Logger {
+func ObtainLogger() *logrus.Logger {
 	logger := logrus.New()
 	if InTesting() {
 		logger.SetLevel(logrus.DebugLevel)
-		logger.SetOutput(os.Stdout)
+		logger.Out = os.Stdout
 	} else {
 		execDir, execFilename, _ := SplitFilepath(os.Args[0])
 		logDir := filepath.Join(execDir, fmt.Sprintf("%s-log", execFilename))
 		os.Mkdir(logDir, 0666)
 		logFile := filepath.Join(logDir, fmt.Sprintf("%sstart.log", time.Now().Format(time.RFC3339)))
-		logger.SetOutput(&lumberjack.Logger{
+		logger.Out = &lumberjack.Logger{
 			Filename:   logFile,
 			MaxSize:    500, // megabytes
 			MaxBackups: 3,
 			MaxAge:     28,   //days
 			Compress:   true, // disabled by default
-		})
+		}
 	}
+	return logger
+}
+
+var logger *logrus.Logger
+
+func init() {
+	logger = ObtainLogger()
+}
+
+func GetLogger() *logrus.Logger {
 	return logger
 }
 

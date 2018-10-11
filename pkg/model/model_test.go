@@ -1,7 +1,6 @@
-package main
+package model
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 	"time"
